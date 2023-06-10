@@ -1,0 +1,9 @@
+rules_version = '2';
+
+service cloud.firestore { //block indicates that these rules are for the Firestore service.
+  match /databases/{database}/documents { //line specifies the top-level match pattern for all documents in the database.
+    match /{document=**} { //line is a wildcard pattern that matches any document in any collection. It allows read and write access to all documents.
+      allow read, write: if true;
+    }
+  }
+}
