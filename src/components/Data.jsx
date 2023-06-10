@@ -7,30 +7,43 @@ import {
   deleteDoc,
   updateDoc,
   doc,
+  getDoc,
+  where,
 } from "firebase/firestore";
 
-export default function Data() {
+//4QfCZqRVTkSzAn3QasKp7FjDXwP2
+export default function Data({ userData }) {
+  console.log('userData', userData)
   const [trackList, setTrackList] = useState([]);
 
-  const dbCollection = collection(db, "tracks");
-
   const getTracks = async () => {
+    console.log(`%c Get user data`, "color: #2196f3");
+    //const currentUser = JSON.parse(sessionStorage.getItem("user")) // get the current user from session storage
+    const currentUser = auth.currentUser;
+
     try {
+      const dbCollection = collection(db, "tracks");
+      //console.log('dbCollection', dbCollection)
       const trackData = await getDocs(dbCollection);
+      console.log("trackData", trackData.docs); // Access the docs property
+
       const filteredData = trackData.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
       }));
-
       setTrackList(filteredData);
+      console.log("filteredData", filteredData);
     } catch (error) {
+      console.log(`%c error`, "color: red");
       console.log(error);
     }
+
+    console.log("trackList: ", trackList);
   };
 
   useEffect(() => {
     getTracks();
-  }, []);
+  }, [userData]);
 
   //! New track / state
   const [newTrack, setNewTrack] = useState("");
@@ -53,6 +66,7 @@ export default function Data() {
           year: newYear,
           userId: user.uid,
           userName: user.displayName,
+          email: user.email,
         };
         await addDoc(collection(db, "tracks"), trackData); // Specify the collection name as 'tracks'
         getTracks();
@@ -85,6 +99,7 @@ export default function Data() {
   const [editYear, setEditYear] = useState();
 
   async function openDialog(id, item) {
+    console.log("item", item);
     //set the dialog input values
     setEditTitle(item.title);
     setEditArtist(item.artist);
@@ -93,21 +108,30 @@ export default function Data() {
     setEditYear(item.year);
 
     setDialog(true); // open the dialog
+
     setTrackId(id); // set the track id to the state of the current track being edited
   }
 
   const updateTrack = async () => {
     try {
-      const trackDoc = doc(db, "music", tackId);
-      await updateDoc(trackDoc, {
-        title: editTitle,
-        artist: editArtist,
-        album: editAlbum,
-        genre: editGenre,
-        year: editYear,
-      });
-      getTracks();
-      setDialog(false); // close the dialog
+      //const user = auth.currentUser; // Get the currently signed-in user
+      if (!userData) { // If user is not signed in
+        console.log("User not signed in.");
+        return;
+      }
+      //identified by the collection path ("music") > and the document ID (trackId)
+      const trackDoc = doc(db, "tracks", tackId); // Create a reference to the specific track document
+
+          await updateDoc(trackDoc, { // Update the document with the new values
+            title: editTitle,
+            artist: editArtist,
+            album: editAlbum,
+            genre: editGenre,
+            year: editYear,
+          });
+          getTracks(); // Refresh the track list
+          setDialog(false); // Close the dialog
+
     } catch (error) {
       console.log(error);
     }
@@ -116,42 +140,46 @@ export default function Data() {
   return (
     <>
       <dialog open={dialog}>
-        <p onClick={() => setDialog(false)}>
+        <p
+          onClick={() => {
+            setDialog(false);
+          }}
+        >
           <b>close</b>
         </p>
         <br />
         <input
           type="text"
           placeholder="Title"
-          defaultValue={editTitle ? editTitle : ""}
+          value={editTitle ? editTitle : ""}
           onChange={(e) => setEditTitle(e.target.value)}
         />{" "}
         <br />
         <input
           type="text"
           placeholder="Artist"
-          defaultValue={editArtist ? editArtist : ""}
+          value={editArtist ? editArtist : ""}
           onChange={(e) => setEditArtist(e.target.value)}
         />{" "}
         <br />
         <input
           type="text"
           placeholder="Album"
-          defaultValue={editAlbum ? editAlbum : ""}
+          value={editAlbum ? editAlbum : ""}
           onChange={(e) => setEditAlbum(e.target.value)}
         />{" "}
         <br />
         <input
           type="text"
           placeholder="Genre"
-          defaultValue={editGenre ? editGenre : ""}
+          value={editGenre ? editGenre : ""}
           onChange={(e) => setEditGenre(e.target.value)}
         />{" "}
         <br />
         <input
           type="number"
           placeholder="Year"
-          defaultValue={editYear ? editYear : ""}
+          value={editYear ? editYear : ""}
           onChange={(e) => setEditYear(Number(e.target.value))}
         />{" "}
         <br />
@@ -160,10 +188,11 @@ export default function Data() {
             updateTrack();
           }}
         >
-          Edit
+          Update
         </button>
       </dialog>
-
+      <br />
+      <p>{userData !== null ? userData?.displayName : ""}</p>
       <div>Tracks</div>
       <div
         style={{
@@ -185,6 +214,7 @@ export default function Data() {
                   overflow: "hidden",
                 }}
               >
+                <span className="user-email">{item.email}</span>
                 <h2>{item.title}</h2>
                 <h2>{item.artist}</h2>
                 <h2>{item.album}</h2>

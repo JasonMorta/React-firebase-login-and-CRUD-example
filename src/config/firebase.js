@@ -1,5 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 import { getAuth, GoogleAuthProvider } from "firebase/auth"; //getAuth is the authentication object
@@ -8,7 +9,7 @@ import { getFirestore } from "firebase/firestore"; //Get Cloud Firestore databas
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDR7Y8CUUUzkoIJSF7OPKY2BaPuTEzLG6g",
+  apiKey: "inside .env file",
   authDomain: "react-firebase-learning-92b43.firebaseapp.com",
   projectId: "react-firebase-learning-92b43",
   storageBucket: "react-firebase-learning-92b43.appspot.com",
