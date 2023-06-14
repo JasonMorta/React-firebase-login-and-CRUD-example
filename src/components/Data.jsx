@@ -16,7 +16,7 @@ export default function Data({ userData }) {
   console.log('userData', userData)
   const [trackList, setTrackList] = useState([]);
 
-  const getTracks = async () => {
+    const getTracks = async () => {
     console.log(`%c Get user data`, "color: #2196f3");
     //const currentUser = JSON.parse(sessionStorage.getItem("user")) // get the current user from session storage
     const currentUser = auth.currentUser;
@@ -28,8 +28,15 @@ export default function Data({ userData }) {
       console.log("trackData", trackData.docs); // Access the docs property
 
       const filteredData = trackData.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
+        //trackData.docs: trackData represents the data retrieved from Firestore, and 
+        //docs is an array property containing the list of documents in the result.
+        //.map((doc) => { ... }): The map function is used to iterate over each document in the docs array and perform an operation on it. 
+        // It creates a new array where each element corresponds to the transformed version of the original document.
+        ...doc.data(), // retrieves the data stored within the Firestore document. The spread operator ... is used to extract all the properties from the data object and include them in the new object being created.
+        id: doc.id,//id is a new property being added to the new object. It is set to the id value of the Firestore document. The id represents the unique identifier of the document.
+        // The resulting object with the spread data and the added id property is returned for each document in the docs array.
+        // The map function collects all the returned objects and creates a new array called filteredData. 
+        // This array contains the transformed documents where each object includes the extracted data from the Firestore document as well as the corresponding id.
       }));
       setTrackList(filteredData);
       console.log("filteredData", filteredData);
